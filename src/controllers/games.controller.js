@@ -14,7 +14,7 @@ export async function createGame(req, res) {
   const { name, image, stockTotal, pricePerDay } = req.body;
 
   try {
-    const gameNameExist = await db.query(`SELECT * from games WHERE name = $1`, [name]);
+    const gameNameExist = await db.query(`SELECT * FROM games WHERE name = $1`, [name]);
 
     if (gameNameExist.rowCount > 0) return res.status(409).send("Já existe um jogo cadastrado com esse nome");
 
