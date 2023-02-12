@@ -38,7 +38,7 @@ export async function insertCustomer(req, res) {
       return res.status(409).send("Esse cpf já está cadastrado");
 
     await db.query(
-      `INSERT INTO customers (name, phone, cpf, birthday) VALUES ($1, $2, $3, $4, 5$);`,
+      `INSERT INTO customers (name, phone, cpf, birthday) VALUES ($1, $2, $3, $4);`,
       [name, phone, cpf, birthday]
     );
 

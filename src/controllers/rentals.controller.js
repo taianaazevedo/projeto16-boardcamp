@@ -81,6 +81,7 @@ export async function insertRental(req, res) {
     `,
       [customerId, gameId, rentDate, daysRented, originalPrice]
     );
+  
 
     res.status(201).send("Aluguel cadastrado");
   } catch (error) {
@@ -88,7 +89,10 @@ export async function insertRental(req, res) {
   }
 }
 
-export async function finishRental(req, res) {}
+export async function finishRental(req, res) {
+
+
+}
 
 export async function deleteRentalById(req, res) {
   const { id } = req.params;
