@@ -106,13 +106,10 @@ export async function finishRental(req, res) {
 
     let price = rent.rows[0].originalPrice / rent.rows[0].daysRented
     let returnDate = dayjs().format("YYYY-MM-DD")
-    let difference = dayjs(returnDate).diff(rent.rentDate, 'days')
+    let difference = dayjs(returnDate).diff(rent.rows[0].rentDate, 'days')
     let delayFee = (difference <= rent.rows[0].daysRented) ? 0 : (difference - rent.rows[0].daysRented) * price 
 
-    console.log(delayFee)
-  
 
-   
     await db.query(`
       UPDATE rentals 
       SET "returnDate" = $1, "delayFee" = $2
