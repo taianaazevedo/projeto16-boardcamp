@@ -1,6 +1,7 @@
 import { db } from "../database/database.connection.js";
 import dayjs from "dayjs";
 
+
 export async function getRentals(req, res) {
   try {
     const allRentals = await db.query(`
@@ -33,7 +34,6 @@ export async function getRentals(req, res) {
       };
     });
 
-
     res.status(201).send(listRentals);
   } catch (error) {
     res.status(500).send(error.message);
@@ -51,8 +51,7 @@ export async function insertRental(req, res) {
       [customerId]
     );
 
-    if (customerExist.rowCount === 0)
-      return res.status(400).send("O id do cliente informado não existe");
+    if (customerExist.rowCount === 0) return res.status(400).send("O id do cliente informado não existe");
 
     const gameExist = await db.query(
       `
@@ -81,7 +80,6 @@ export async function insertRental(req, res) {
     `,
       [customerId, gameId, rentDate, daysRented, originalPrice]
     );
-  
 
     res.status(201).send("Aluguel cadastrado");
   } catch (error) {
@@ -90,8 +88,44 @@ export async function insertRental(req, res) {
 }
 
 export async function finishRental(req, res) {
+  const { id } = req.params;
+  try {
 
+    const idExist = await db.query(`
+      SELECT * FROM
+      rentals 
+      WHERE id = $1
+    `, [id])
+    if (idExist.rowCount === 0) return res.status(404).send("Esse id não existe");
 
+    const rent = await db.query(`
+      SELECT * FROM rentals WHERE id = $1
+    `, [id])
+
+    if(rent.rows[0].returnDate !== null ) return res.status(400).send("Este aluguel já está finalizado")
+
+    let returnDate = dayjs().format("YYYY-MM-DD")
+    let difference = dayjs(returnDate).diff(rent.returnDate, 'day')
+    let delayFee = (difference <= rent.rows[0].daysRented) ? 0 : difference*rent.rows[0].originalPrice; 
+
+    console.log(rent.rows[0].daysRented)
+    
+
+    console.log(delayFee)
+    console.log(difference)
+
+    
+    await db.query(`
+      UPDATE rentals 
+      SET "returnDate" = $1, "delayFee" = $2
+      WHERE id = $3
+    `, [returnDate, delayFee, id])
+
+    res.status(200).send("Aluguel finalizado")
+
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
 }
 
 export async function deleteRentalById(req, res) {
@@ -112,7 +146,7 @@ export async function deleteRentalById(req, res) {
     );
 
     if (finishedRental.rowCount === null)
-      return res.status(400).send("Esse aluguel não foi finalizado");
+      return res.status(400).send("Esse aluguel ainda não foi finalizado");
 
     await db.query(
       `
