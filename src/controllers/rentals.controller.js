@@ -104,10 +104,11 @@ export async function finishRental(req, res) {
 
     if(rent.rows[0].returnDate !== null ) return res.status(400).send("Este aluguel já está finalizado")
 
+    let price = rent.rows[0].originalPrice * rent.rows[0].daysRented
     let returnDate = dayjs().format("YYYY-MM-DD")
     let difference = dayjs(returnDate).diff(rent.returnDate, 'day')
-    // let delayFee = (difference <= rent.rows[0].daysRented) ? 0 : difference*rent.rows[0].originalPrice; 
-    let delayFee = rent.rows[0].originalPrice * difference
+    let delayFee = (difference <= rent.rows[0].daysRented) ? 0 : difference*price 
+  
 
    
     await db.query(`
@@ -130,11 +131,8 @@ export async function deleteRentalById(req, res) {
 
     if (rentalId.rowCount === 0) return res.status(404).send("O id informado não existe");
 
-    const finishedRental = await db.query(
-      `SELECT rentals."returnDate" FROM rentals WHERE id = $1
-    `, [id]);
-
-    if (finishedRental.rowCount === null) return res.status(400).send("Esse aluguel ainda não foi finalizado");
+    
+    if (rentalId.rows[0].returnDate === null) return res.status(400).send("Esse aluguel ainda não foi finalizado");
 
     await db.query(
       `DELETE FROM rentals 
